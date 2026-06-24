@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeleOps AI — Alarms</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="dashboard.html" class="nav-brand">TeleOps <span class="dot">AI</span></a>
+  <ul class="nav-links">
+    <li><a href="dashboard.html">📊 Dashboard</a></li>
+    <li><a href="devices.html">🖥️ Devices</a></li>
+    <li><a href="alarms.html" class="active">🔔 Alarms</a></li>
+    <li><a href="tickets.html">🎫 Tickets</a></li>
+    <li class="nav-dropdown">
+      <a href="#">🤖 AI Tools ▾</a>
+      <div class="nav-dropdown-menu">
+        <a href="ai-rca.html">🔍 Root Cause Analysis</a>
+        <a href="ai-logs.html">📋 Log Summary</a>
+        <a href="ai-report.html">📄 Incident Report</a>
+        <a href="ai-chat.html">💬 AI Chat</a>
+      </div>
+    </li>
+  </ul>
+  <div class="nav-right">
+    <span id="nav-user"></span>
+    <button class="btn btn-ghost btn-sm" onclick="Auth.logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-title">
+      <div class="icon" style="background:rgba(239,68,68,.15)">🔔</div>
+      Alarm Management
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" id="raiseAlarmBtn" onclick="openRaiseModal()">
+        + Raise Alarm
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="loadAlarms()">↻ Refresh</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:8px;margin-bottom:20px">
+    <button class="btn btn-primary" id="tab-active" onclick="switchTab('active')">
+      🔴 Active
+    </button>
+    <button class="btn btn-ghost" id="tab-all" onclick="switchTab('all')">
+      📋 All Alarms
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-header" id="tableTitle">Active Alarms</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Severity</th><th>Title</th><th>Device</th>
+            <th>Status</th><th>Raised At</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="alarmTable">
+          <tr class="loading-row"><td colspan="6">Loading alarms…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- RAISE ALARM MODAL -->
+<div class="modal-overlay" id="raiseModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🔔 Raise New Alarm</span>
+      <button class="modal-close" onclick="closeModal('raiseModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Device *</label>
+        <select id="aDeviceId" class="form-select">
+          <option value="">— Loading devices… —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Severity *</label>
+        <select id="aSeverity" class="form-select">
+          <option value="">— Select Severity —</option>
+          <option value="CRITICAL">🔴 CRITICAL</option>
+          <option value="HIGH">🟠 HIGH</option>
+          <option value="MEDIUM">🟡 MEDIUM</option>
+          <option value="LOW">🔵 LOW</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Title *</label>
+        <input type="text" id="aTitle" class="form-control"
+               placeholder="Brief description of the alarm">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description *</label>
+        <textarea id="aDesc" class="form-control"
+                  placeholder="Detailed context about this alarm…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('raiseModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="raiseAlarm()">🔔 Raise Alarm</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESOLVE MODAL -->
+<div class="modal-overlay" id="resolveModal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <span class="modal-title">✅ Resolve Alarm</span>
+      <button class="modal-close" onclick="closeModal('resolveModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="resolveAlarmId">
+      <div class="form-group">
+        <label class="form-label">Resolution Note * (min 10 chars)</label>
+        <textarea id="resolveNote" class="form-control" rows="4"
+                  placeholder="Describe what was done to fix this issue…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('resolveModal')">Cancel</button>
+      <button class="btn btn-success" onclick="submitResolve()">✅ Resolve</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/alarms.js"></script>
+</body>
+</html>

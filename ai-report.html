@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeleOps AI — Incident Report</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="dashboard.html" class="nav-brand">TeleOps <span class="dot">AI</span></a>
+  <ul class="nav-links">
+    <li><a href="dashboard.html">📊 Dashboard</a></li>
+    <li><a href="devices.html">🖥️ Devices</a></li>
+    <li><a href="alarms.html">🔔 Alarms</a></li>
+    <li><a href="tickets.html">🎫 Tickets</a></li>
+    <li class="nav-dropdown">
+      <a href="#" class="active">🤖 AI Tools ▾</a>
+      <div class="nav-dropdown-menu">
+        <a href="ai-rca.html">🔍 Root Cause Analysis</a>
+        <a href="ai-logs.html">📋 Log Summary</a>
+        <a href="ai-report.html" class="active">📄 Incident Report</a>
+        <a href="ai-chat.html">💬 AI Chat</a>
+      </div>
+    </li>
+  </ul>
+  <div class="nav-right">
+    <span id="nav-user"></span>
+    <button class="btn btn-ghost btn-sm" onclick="Auth.logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-title">
+      <div class="icon" style="background:rgba(168,85,247,.15)">📄</div>
+      AI Incident Report
+    </div>
+    <a href="dashboard.html" class="btn btn-ghost btn-sm">← Back</a>
+  </div>
+
+  <div style="max-width:700px">
+    <div class="card">
+      <div class="card-header">Generate Report for Resolved Ticket</div>
+      <div class="card-body">
+        <p style="font-size:14px;color:var(--text-muted);margin-bottom:20px">
+          Select a <strong>resolved or closed</strong> ticket. The AI will generate a
+          formal 5-section incident report with summary, timeline, root cause,
+          resolution, and recommendations.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">Select Ticket *</label>
+          <select id="ticketSelect" class="form-select">
+            <option value="">— Loading tickets… —</option>
+          </select>
+        </div>
+
+        <div id="ticketPreview" style="display:none" class="alert alert-info">
+          <!-- populated on selection -->
+        </div>
+
+        <button class="btn btn-primary btn-block" id="reportBtn"
+                onclick="generateReport()">
+          📄 Generate Incident Report
+        </button>
+      </div>
+    </div>
+
+    <div id="resultArea"></div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/ai-report.js"></script>
+</body>
+</html>

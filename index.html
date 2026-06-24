@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeleOps AI — Login</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <h1>TeleOps <span class="dot">AI</span></h1>
+      <p>Network Operations Center Platform</p>
+    </div>
+
+    <div id="alert-area"></div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" id="email" class="form-control"
+               placeholder="engineer@teleops.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="password" class="form-control"
+               placeholder="••••••••" required>
+      </div>
+      <button type="submit" id="loginBtn" class="btn btn-primary btn-block btn-lg">
+        Sign In
+      </button>
+    </form>
+
+    <div class="login-divider">— or —</div>
+
+    <a href="register.html" class="btn btn-ghost btn-block">
+      Create New Account
+    </a>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script>
+  // If already logged in, go to dashboard
+  if (Auth.getToken()) window.location.href = 'dashboard.html';
+
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    const alertArea = document.getElementById('alert-area');
+    alertArea.innerHTML = '';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Signing in…';
+
+    try {
+      const data = await API.login(
+        document.getElementById('email').value,
+        document.getElementById('password').value
+      );
+      Auth.setSession(data);
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      alertArea.innerHTML = `<div class="alert alert-danger">⚠️ ${err.message}</div>`;
+      btn.disabled = false;
+      btn.innerHTML = 'Sign In';
+    }
+  });
+</script>
+</body>
+</html>

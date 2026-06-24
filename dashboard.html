@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeleOps AI — Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="nav">
+  <a href="dashboard.html" class="nav-brand">TeleOps <span class="dot">AI</span></a>
+  <ul class="nav-links">
+    <li><a href="dashboard.html" class="active">📊 Dashboard</a></li>
+    <li><a href="devices.html">🖥️ Devices</a></li>
+    <li><a href="alarms.html">🔔 Alarms</a></li>
+    <li><a href="tickets.html">🎫 Tickets</a></li>
+    <li class="nav-dropdown">
+      <a href="#">🤖 AI Tools ▾</a>
+      <div class="nav-dropdown-menu">
+        <a href="ai-rca.html">🔍 Root Cause Analysis</a>
+        <a href="ai-logs.html">📋 Log Summary</a>
+        <a href="ai-report.html">📄 Incident Report</a>
+        <a href="ai-chat.html">💬 AI Chat</a>
+      </div>
+    </li>
+  </ul>
+  <div class="nav-right">
+    <span id="nav-user"></span>
+    <button class="btn btn-ghost btn-sm" onclick="Auth.logout()">Logout</button>
+  </div>
+</nav>
+
+<!-- PAGE -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-title">
+      <div class="icon" style="background:rgba(59,130,246,.15)">📊</div>
+      NOC Dashboard
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="loadDashboard()">↻ Refresh</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card">
+      <div class="stat-label">Loading…</div>
+      <div class="stat-value color-blue"><span class="spinner"></span></div>
+    </div>
+  </div>
+
+  <!-- Two columns: recent alarms + recent tickets -->
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header">
+        🔔 Active Alarms
+        <a href="alarms.html" class="btn btn-ghost btn-sm">View All</a>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Device</th><th>Severity</th><th>Title</th><th>Status</th></tr>
+          </thead>
+          <tbody id="recentAlarms">
+            <tr class="loading-row"><td colspan="4">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        🎫 Active Tickets
+        <a href="tickets.html" class="btn btn-ghost btn-sm">View All</a>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Ticket #</th><th>Priority</th><th>Title</th><th>Status</th></tr>
+          </thead>
+          <tbody id="recentTickets">
+            <tr class="loading-row"><td colspan="4">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

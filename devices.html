@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeleOps AI — Devices</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="dashboard.html" class="nav-brand">TeleOps <span class="dot">AI</span></a>
+  <ul class="nav-links">
+    <li><a href="dashboard.html">📊 Dashboard</a></li>
+    <li><a href="devices.html" class="active">🖥️ Devices</a></li>
+    <li><a href="alarms.html">🔔 Alarms</a></li>
+    <li><a href="tickets.html">🎫 Tickets</a></li>
+    <li class="nav-dropdown">
+      <a href="#">🤖 AI Tools ▾</a>
+      <div class="nav-dropdown-menu">
+        <a href="ai-rca.html">🔍 Root Cause Analysis</a>
+        <a href="ai-logs.html">📋 Log Summary</a>
+        <a href="ai-report.html">📄 Incident Report</a>
+        <a href="ai-chat.html">💬 AI Chat</a>
+      </div>
+    </li>
+  </ul>
+  <div class="nav-right">
+    <span id="nav-user"></span>
+    <button class="btn btn-ghost btn-sm" onclick="Auth.logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-title">
+      <div class="icon" style="background:rgba(6,182,212,.15)">🖥️</div>
+      Device Inventory
+    </div>
+    <button class="btn btn-primary" id="addDeviceBtn" onclick="openAddModal()">
+      + Add Device
+    </button>
+  </div>
+
+  <div id="alert-area"></div>
+
+  <div class="card">
+    <div class="card-header">
+      All Devices
+      <div style="display:flex;gap:8px">
+        <select class="form-select" id="filterType" style="width:160px;padding:5px 30px 5px 10px" onchange="applyFilter()">
+          <option value="">All Types</option>
+          <option value="TOWER_4G">4G Tower</option>
+          <option value="TOWER_5G">5G Tower</option>
+          <option value="ROUTER">Router</option>
+          <option value="FIREWALL">Firewall</option>
+          <option value="SWITCH">Switch</option>
+          <option value="BASE_STATION">Base Station</option>
+        </select>
+        <select class="form-select" id="filterStatus" style="width:150px;padding:5px 30px 5px 10px" onchange="applyFilter()">
+          <option value="">All Statuses</option>
+          <option value="ONLINE">Online</option>
+          <option value="OFFLINE">Offline</option>
+          <option value="DEGRADED">Degraded</option>
+          <option value="MAINTENANCE">Maintenance</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="loadDevices()">↻</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th><th>Type</th><th>Status</th>
+            <th>IP Address</th><th>Location</th><th>Vendor</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="deviceTable">
+          <tr class="loading-row"><td colspan="7">Loading devices…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-overlay" id="deviceModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Add Device</span>
+      <button class="modal-close" onclick="closeModal('deviceModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Device Name *</label>
+          <input type="text" id="dName" class="form-control" placeholder="Tower-BKK-001">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type *</label>
+          <select id="dType" class="form-select">
+            <option value="">— Select —</option>
+            <option value="TOWER_4G">4G Tower</option>
+            <option value="TOWER_5G">5G Tower</option>
+            <option value="ROUTER">Router</option>
+            <option value="FIREWALL">Firewall</option>
+            <option value="SWITCH">Switch</option>
+            <option value="BASE_STATION">Base Station</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">IP Address *</label>
+          <input type="text" id="dIp" class="form-control" placeholder="192.168.1.100">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status *</label>
+          <select id="dStatus" class="form-select">
+            <option value="ONLINE">Online</option>
+            <option value="OFFLINE">Offline</option>
+            <option value="DEGRADED">Degraded</option>
+            <option value="MAINTENANCE">Maintenance</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Location *</label>
+          <input type="text" id="dLocation" class="form-control" placeholder="Bangkok">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vendor</label>
+          <input type="text" id="dVendor" class="form-control" placeholder="Ericsson">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Model</label>
+          <input type="text" id="dModel" class="form-control" placeholder="RBS-6202">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input type="text" id="dDesc" class="form-control" placeholder="Optional notes">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('deviceModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveDeviceBtn" onclick="saveDevice()">Save Device</button>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS UPDATE MODAL -->
+<div class="modal-overlay" id="statusModal">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header">
+      <span class="modal-title">Update Status</span>
+      <button class="modal-close" onclick="closeModal('statusModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="statusDeviceId">
+      <div class="form-group">
+        <label class="form-label">New Status</label>
+        <select id="newStatus" class="form-select">
+          <option value="ONLINE">Online</option>
+          <option value="OFFLINE">Offline</option>
+          <option value="DEGRADED">Degraded</option>
+          <option value="MAINTENANCE">Maintenance</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('statusModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveStatus()">Update</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/devices.js"></script>
+</body>
+</html>

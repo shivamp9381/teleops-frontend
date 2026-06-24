@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeleOps AI — Tickets</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="dashboard.html" class="nav-brand">TeleOps <span class="dot">AI</span></a>
+  <ul class="nav-links">
+    <li><a href="dashboard.html">📊 Dashboard</a></li>
+    <li><a href="devices.html">🖥️ Devices</a></li>
+    <li><a href="alarms.html">🔔 Alarms</a></li>
+    <li><a href="tickets.html" class="active">🎫 Tickets</a></li>
+    <li class="nav-dropdown">
+      <a href="#">🤖 AI Tools ▾</a>
+      <div class="nav-dropdown-menu">
+        <a href="ai-rca.html">🔍 Root Cause Analysis</a>
+        <a href="ai-logs.html">📋 Log Summary</a>
+        <a href="ai-report.html">📄 Incident Report</a>
+        <a href="ai-chat.html">💬 AI Chat</a>
+      </div>
+    </li>
+  </ul>
+  <div class="nav-right">
+    <span id="nav-user"></span>
+    <button class="btn btn-ghost btn-sm" onclick="Auth.logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-title">
+      <div class="icon" style="background:rgba(168,85,247,.15)">🎫</div>
+      Ticket Management
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" id="createTicketBtn" onclick="openCreateModal()">
+        + Create Ticket
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="loadTickets()">↻ Refresh</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:8px;margin-bottom:20px">
+    <button class="btn btn-primary" id="tab-active" onclick="switchTab('active')">🔥 Active</button>
+    <button class="btn btn-ghost"   id="tab-all"    onclick="switchTab('all')">📋 All</button>
+    <button class="btn btn-ghost"   id="tab-mine"   onclick="switchTab('mine')">👤 Mine</button>
+  </div>
+
+  <div class="card">
+    <div class="card-header" id="tableTitle">Active Tickets</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ticket #</th><th>Priority</th><th>Title</th>
+            <th>Device</th><th>Status</th><th>Assigned</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="ticketTable">
+          <tr class="loading-row"><td colspan="7">Loading tickets…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE TICKET MODAL -->
+<div class="modal-overlay" id="createModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title">🎫 Create New Ticket</span>
+      <button class="modal-close" onclick="closeModal('createModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Device *</label>
+          <select id="tDeviceId" class="form-select">
+            <option value="">— Select Device —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Priority *</label>
+          <select id="tPriority" class="form-select">
+            <option value="">— Select —</option>
+            <option value="CRITICAL">🔴 CRITICAL</option>
+            <option value="HIGH">🟠 HIGH</option>
+            <option value="MEDIUM">🟡 MEDIUM</option>
+            <option value="LOW">🔵 LOW</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Linked Alarm (optional)</label>
+        <select id="tAlarmId" class="form-select">
+          <option value="">— None —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Title *</label>
+        <input type="text" id="tTitle" class="form-control"
+               placeholder="Brief ticket title">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description *</label>
+        <textarea id="tDesc" class="form-control" rows="4"
+                  placeholder="Detailed description of the issue…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('createModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="createTicket()">🎫 Create Ticket</button>
+    </div>
+  </div>
+</div>
+
+<!-- ASSIGN MODAL -->
+<div class="modal-overlay" id="assignModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <span class="modal-title">👤 Assign Ticket</span>
+      <button class="modal-close" onclick="closeModal('assignModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="assignTicketId">
+      <div class="form-group">
+        <label class="form-label">Assign To (User ID) *</label>
+        <input type="text" id="assignUserId" class="form-control"
+               placeholder="Enter engineer's user ID">
+        <small style="color:var(--text-muted);font-size:11px;margin-top:4px;display:block">
+          Get user ID from auth/me endpoint
+        </small>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('assignModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAssign()">Assign</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESOLVE TICKET MODAL -->
+<div class="modal-overlay" id="resolveTicketModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <span class="modal-title">✅ Resolve Ticket</span>
+      <button class="modal-close" onclick="closeModal('resolveTicketModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="resolveTicketId">
+      <div class="form-group">
+        <label class="form-label">Resolution * (min 20 chars)</label>
+        <textarea id="resolveTicketNote" class="form-control" rows="5"
+                  placeholder="Describe the steps taken to resolve this issue…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('resolveTicketModal')">Cancel</button>
+      <button class="btn btn-success" onclick="submitResolveTicket()">✅ Resolve</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/tickets.js"></script>
+</body>
+</html>
