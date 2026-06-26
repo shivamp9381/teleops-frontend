@@ -16,10 +16,10 @@ const Auth = {
         localStorage.setItem(CONFIG.TOKEN_KEY, data.accessToken);
         localStorage.setItem(CONFIG.REFRESH_KEY, data.refreshToken);
         localStorage.setItem(CONFIG.USER_KEY, JSON.stringify({
-            id: data.userId,
-            name: data.name,
+            id:    data.userId,
+            name:  data.name,
             email: data.email,
-            role: data.role
+            role:  data.role
         }));
     },
 
@@ -44,7 +44,10 @@ const Auth = {
 
     isAdmin() {
         const user = this.getUser();
-        return user && (user.role === 'SUPER_ADMIN' || user.role === 'NOC_MANAGER');
+        return user && (
+            user.role === 'SUPER_ADMIN' ||
+            user.role === 'NOC_MANAGER'
+        );
     },
 
     isSuperAdmin() {
@@ -71,4 +74,14 @@ function renderNavUser() {
             el.textContent = `${user.name} (${user.role})`;
         }
     }
+}
+
+// Helper used across pages
+function getInitials(name) {
+    if (!name) return '?';
+    return name.split(' ')
+        .map(w => w[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
 }

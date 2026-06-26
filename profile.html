@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeleOps AI — My Profile</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="dashboard.html" class="nav-brand">TeleOps <span class="dot">AI</span></a>
+  <ul class="nav-links">
+    <li><a href="dashboard.html">📊 Dashboard</a></li>
+    <li><a href="devices.html">🖥️ Devices</a></li>
+    <li><a href="alarms.html">🔔 Alarms</a></li>
+    <li><a href="tickets.html">🎫 Tickets</a></li>
+    <!-- Add these two items to nav-links in ALL html files -->
+<li><a href="profile.html">👤 Profile</a></li>
+<li id="teamNavItem"><a href="users.html">👥 Team</a></li>
+    <li class="nav-dropdown">
+      <a href="#">🤖 AI Tools ▾</a>
+      <div class="nav-dropdown-menu">
+        <a href="ai-rca.html">🔍 Root Cause Analysis</a>
+        <a href="ai-logs.html">📋 Log Summary</a>
+        <a href="ai-report.html">📄 Incident Report</a>
+        <a href="ai-chat.html">💬 AI Chat</a>
+      </div>
+    </li>
+    <li><a href="profile.html" class="active">👤 Profile</a></li>
+  </ul>
+  <div class="nav-right">
+    <span id="nav-user"></span>
+    <button class="btn btn-ghost btn-sm" onclick="Auth.logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-title">
+      <div class="icon" style="background:rgba(59,130,246,.15)">👤</div>
+      My Profile
+    </div>
+    <div style="display:flex;gap:8px">
+      <a href="dashboard.html" class="btn btn-ghost btn-sm">← Back</a>
+    </div>
+  </div>
+
+  <!-- Profile Content -->
+  <div style="display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start">
+
+    <!-- Left: Profile Card -->
+    <div>
+      <!-- Identity Card -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-body" style="text-align:center;padding:32px 24px">
+          <div id="profileAvatar" style="
+            width:80px;height:80px;border-radius:50%;
+            background:var(--accent);
+            display:flex;align-items:center;justify-content:center;
+            font-size:32px;font-weight:800;color:#fff;
+            margin:0 auto 16px;
+            box-shadow:0 0 32px rgba(59,130,246,.4)
+          ">?</div>
+          <div id="profileName" style="font-size:20px;font-weight:700;margin-bottom:4px">Loading…</div>
+          <div id="profileEmail" style="font-size:13px;color:var(--text-muted);margin-bottom:12px"></div>
+          <div id="profileRoleBadge"></div>
+          <div id="profileStatus" style="margin-top:8px"></div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding:16px 20px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px">
+            <span style="color:var(--text-muted)">Member Since</span>
+            <span id="profileSince" style="color:var(--text-primary)">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px">
+            <span style="color:var(--text-muted)">Last Updated</span>
+            <span id="profileUpdated" style="color:var(--text-primary)">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity Stats -->
+      <div class="card">
+        <div class="card-header">📈 Activity Stats</div>
+        <div class="card-body" style="padding:16px 20px">
+          <div class="stat-row" id="alarmsRaisedStat">
+            <div class="stat-row-label">🔔 Alarms Raised</div>
+            <div class="stat-row-value color-red">—</div>
+          </div>
+          <div class="stat-row" id="ticketsCreatedStat">
+            <div class="stat-row-label">🎫 Tickets Created</div>
+            <div class="stat-row-value color-blue">—</div>
+          </div>
+          <div class="stat-row" id="ticketsResolvedStat">
+            <div class="stat-row-label">✅ Alarms Resolved</div>
+            <div class="stat-row-value color-green">—</div>
+          </div>
+          <div class="stat-row" id="ticketsAssignedStat">
+            <div class="stat-row-label">📌 Open Assigned Tickets</div>
+            <div class="stat-row-value color-amber">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Edit Forms -->
+    <div>
+      <!-- Update Name -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">✏️ Update Profile</div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px">
+            Update your display name. Email address cannot be changed.
+          </p>
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" id="editName" class="form-control"
+                   placeholder="Your full name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="editEmail" class="form-control"
+                   disabled style="opacity:0.5;cursor:not-allowed">
+            <small style="color:var(--text-muted);font-size:11px">
+              Email cannot be changed — it is your login identifier.
+            </small>
+          </div>
+          <button class="btn btn-primary" onclick="updateProfile()">
+            💾 Save Changes
+          </button>
+        </div>
+      </div>
+
+      <!-- Change Password -->
+      <div class="card">
+        <div class="card-header">🔒 Change Password</div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px">
+            Choose a strong password with at least 8 characters.
+            You must enter your current password to confirm the change.
+          </p>
+          <div class="form-group">
+            <label class="form-label">Current Password *</label>
+            <input type="password" id="currentPassword" class="form-control"
+                   placeholder="Enter current password">
+          </div>
+          <div class="form-group">
+            <label class="form-label">New Password * (min 8 chars)</label>
+            <input type="password" id="newPassword" class="form-control"
+                   placeholder="Enter new password">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm New Password *</label>
+            <input type="password" id="confirmPassword" class="form-control"
+                   placeholder="Repeat new password">
+          </div>
+          <button class="btn btn-warning" onclick="changePassword()">
+            🔒 Change Password
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<style>
+.stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-row-label { color: var(--text-light); }
+.stat-row-value { font-size: 20px; font-weight: 800; }
+</style>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/profile.js"></script>
+
+<script>
+  // Hide Team link for non-admins
+  if (!Auth.isAdmin()) {
+    const el = document.getElementById('teamNavItem');
+    if (el) el.style.display = 'none';
+  }
+</script>
+
+</body>
+</html>

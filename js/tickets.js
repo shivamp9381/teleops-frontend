@@ -41,14 +41,22 @@ function switchTab(tab) {
 async function loadTickets() {
     document.getElementById('ticketTable').innerHTML =
         '<tr class="loading-row"><td colspan="7">Loading…</td></tr>';
-    const titles = { active: 'Active Tickets', all: 'All Tickets', mine: 'My Tickets' };
-    document.getElementById('tableTitle').textContent = titles[currentTab];
+    const titles = {
+        active: 'Active Tickets',
+        all: 'All Tickets',
+        mine: 'My Tickets'
+    };
+    document.getElementById('tableTitle').textContent =
+        titles[currentTab];
 
     try {
         let tickets;
-        if (currentTab === 'active') tickets = await API.getActiveTickets();
-        else if (currentTab === 'mine') tickets = await API.request('GET', '/tickets/my');
-        else tickets = await API.getTickets();
+        if (currentTab === 'active')
+            tickets = await API.getActiveTickets();
+        else if (currentTab === 'mine')
+            tickets = await API.request('GET', '/tickets/my');
+        else
+            tickets = await API.getTickets();
         renderTable(tickets);
     } catch (e) {
         document.getElementById('ticketTable').innerHTML =
@@ -68,25 +76,35 @@ function renderTable(tickets) {
         return;
     }
 
-    const isAdmin   = Auth.isAdmin();
+    const isAdmin    = Auth.isAdmin();
     const isEngineer = Auth.isEngineer();
 
     tb.innerHTML = tickets.map(t => `
         <tr>
             <td><code style="color:var(--accent)">${t.ticketNumber}</code></td>
-            <td><span class="badge ${PRIO_BADGE[t.priority] || 'badge-gray'}">${t.priority}</span></td>
+            <td>
+                <span class="badge ${PRIO_BADGE[t.priority] || 'badge-gray'}">
+                    ${t.priority}
+                </span>
+            </td>
             <td><strong>${t.title}</strong></td>
             <td>${t.deviceName || '—'}</td>
-            <td><span class="badge ${STATUS_BADGE[t.status] || 'badge-gray'}">${t.status}</span></td>
+            <td>
+                <span class="badge ${STATUS_BADGE[t.status] || 'badge-gray'}">
+                    ${t.status}
+                </span>
+            </td>
             <td style="font-size:12px">${t.assignedName || '—'}</td>
             <td>
                 <div class="action-row">
-                    ${isAdmin && (t.status === 'OPEN' || t.status === 'IN_PROGRESS') ? `
+                    ${isAdmin && (t.status === 'OPEN' ||
+                                  t.status === 'IN_PROGRESS') ? `
                     <button class="btn btn-warning btn-sm"
                         onclick="openAssignModal('${t.id}')">
                         👤 Assign
                     </button>` : ''}
-                    ${isEngineer && (t.status === 'OPEN' || t.status === 'IN_PROGRESS') ? `
+                    ${isEngineer && (t.status === 'OPEN' ||
+                                      t.status === 'IN_PROGRESS') ? `
                     <button class="btn btn-success btn-sm"
                         onclick="openResolveModal('${t.id}')">
                         ✅ Resolve
@@ -97,7 +115,8 @@ function renderTable(tickets) {
                         🔒 Close
                     </button>` : ''}
                     ${isAdmin && t.status === 'RESOLVED' ? `
-                    <a href="ai-report.html?ticketId=${t.id}" class="btn btn-ghost btn-sm">
+                    <a href="ai-report.html?ticketId=${t.id}"
+                       class="btn btn-ghost btn-sm">
                         📄 Report
                     </a>` : ''}
                 </div>
@@ -107,39 +126,44 @@ function renderTable(tickets) {
 }
 
 async function openCreateModal() {
-    // Load devices
     const devSel = document.getElementById('tDeviceId');
-    devSel.innerHTML = '<option value="">— Loading… —</option>';
-
-    // Load active alarms
     const almSel = document.getElementById('tAlarmId');
+    devSel.innerHTML = '<option value="">— Loading… —</option>';
     almSel.innerHTML = '<option value="">— Loading… —</option>';
 
     document.getElementById('createModal').classList.add('open');
-    document.getElementById('tTitle').value = '';
-    document.getElementById('tDesc').value = '';
+    document.getElementById('tTitle').value    = '';
+    document.getElementById('tDesc').value     = '';
     document.getElementById('tPriority').value = '';
 
     try {
         const devices = await API.getDevices();
-        devSel.innerHTML = '<option value="">— Select Device —</option>' +
+        devSel.innerHTML =
+            '<option value="">— Select Device —</option>' +
             devices.map(d =>
-                `<option value="${d.id}">${d.name} (${d.ipAddress}) — ${d.status}</option>`
+                `<option value="${d.id}">
+                    ${d.name} (${d.ipAddress}) — ${d.status}
+                </option>`
             ).join('');
     } catch (e) {
-        devSel.innerHTML = '<option value="">Error loading devices</option>';
+        devSel.innerHTML =
+            '<option value="">Error loading devices</option>';
     }
 
     try {
         const alarms = await API.getAlarms();
-        almSel.innerHTML = '<option value="">— None —</option>' +
+        almSel.innerHTML =
+            '<option value="">— None —</option>' +
             alarms
                 .filter(a => a.status !== 'RESOLVED')
                 .map(a =>
-                    `<option value="${a.id}">[${a.severity}] ${a.title} (${a.deviceName})</option>`
+                    `<option value="${a.id}">
+                        [${a.severity}] ${a.title} (${a.deviceName})
+                    </option>`
                 ).join('');
     } catch (e) {
-        almSel.innerHTML = '<option value="">No alarms available</option>';
+        almSel.innerHTML =
+            '<option value="">No alarms available</option>';
     }
 }
 
@@ -168,22 +192,73 @@ async function createTicket() {
     }
 }
 
-function openAssignModal(ticketId) {
+// ─── IMPROVED Assign Modal — loads real engineers ─────────────────────────────
+
+async function openAssignModal(ticketId) {
     document.getElementById('assignTicketId').value = ticketId;
-    document.getElementById('assignUserId').value = '';
+
+    // Replace the plain text input with a dropdown
+    const modalBody = document.querySelector('#assignModal .modal-body');
+    modalBody.innerHTML = `
+        <input type="hidden" id="assignTicketId" value="${ticketId}">
+        <div class="form-group">
+            <label class="form-label">Assign To *</label>
+            <select id="assignUserSelect" class="form-select">
+                <option value="">— Loading engineers… —</option>
+            </select>
+        </div>
+    `;
+
     document.getElementById('assignModal').classList.add('open');
+
+    try {
+        const engineers = await API.getActiveEngineers();
+        const sel = document.getElementById('assignUserSelect');
+        if (!engineers.length) {
+            sel.innerHTML =
+                '<option value="">No active engineers available</option>';
+            return;
+        }
+        sel.innerHTML =
+            '<option value="">— Select Engineer —</option>' +
+            engineers.map(e =>
+                `<option value="${e.id}">${e.name} (${e.email})</option>`
+            ).join('');
+    } catch (e) {
+        // Fallback to text input if API fails
+        const modalBody =
+            document.querySelector('#assignModal .modal-body');
+        modalBody.innerHTML = `
+            <input type="hidden" id="assignTicketId" value="${ticketId}">
+            <div class="form-group">
+                <label class="form-label">Assign To (User ID) *</label>
+                <input type="text" id="assignUserId" class="form-control"
+                       placeholder="Enter engineer's user ID">
+                <small style="color:var(--text-muted);font-size:11px;
+                              margin-top:4px;display:block">
+                    Could not load engineers list. Enter ID manually.
+                </small>
+            </div>
+        `;
+    }
 }
 
 async function submitAssign() {
     const ticketId = document.getElementById('assignTicketId').value;
-    const userId   = document.getElementById('assignUserId').value.trim();
+
+    // Try dropdown first, then text input
+    const select = document.getElementById('assignUserSelect');
+    const input  = document.getElementById('assignUserId');
+    const userId = select ? select.value : (input ? input.value.trim() : '');
+
     if (!userId) {
-        toast('Please enter a user ID', 'error');
+        toast('Please select an engineer', 'error');
         return;
     }
+
     try {
         await API.assignTicket(ticketId, userId);
-        toast('Ticket assigned', 'success');
+        toast('Ticket assigned successfully', 'success');
         closeModal('assignModal');
         loadTickets();
     } catch (e) {
@@ -192,14 +267,15 @@ async function submitAssign() {
 }
 
 function openResolveModal(ticketId) {
-    document.getElementById('resolveTicketId').value = ticketId;
-    document.getElementById('resolveTicketNote').value = '';
+    document.getElementById('resolveTicketId').value    = ticketId;
+    document.getElementById('resolveTicketNote').value  = '';
     document.getElementById('resolveTicketModal').classList.add('open');
 }
 
 async function submitResolveTicket() {
     const id         = document.getElementById('resolveTicketId').value;
-    const resolution = document.getElementById('resolveTicketNote').value.trim();
+    const resolution =
+        document.getElementById('resolveTicketNote').value.trim();
     if (resolution.length < 20) {
         toast('Resolution must be at least 20 characters', 'error');
         return;
@@ -215,7 +291,9 @@ async function submitResolveTicket() {
 }
 
 async function closeTicket(id) {
-    if (!confirm('Close this ticket? This marks it as permanently closed.')) return;
+    if (!confirm(
+        'Close this ticket? This marks it as permanently closed.'
+    )) return;
     try {
         await API.closeTicket(id);
         toast('Ticket closed', 'success');

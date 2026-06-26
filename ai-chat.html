@@ -15,6 +15,8 @@
     <li><a href="devices.html">🖥️ Devices</a></li>
     <li><a href="alarms.html">🔔 Alarms</a></li>
     <li><a href="tickets.html">🎫 Tickets</a></li>
+    <li><a href="profile.html">👤 Profile</a></li>
+    <li id="teamNavItem"><a href="users.html">👥 Team</a></li>
     <li class="nav-dropdown">
       <a href="#" class="active">🤖 AI Tools ▾</a>
       <div class="nav-dropdown-menu">
@@ -88,5 +90,14 @@
 <script src="js/auth.js"></script>
 <script src="js/api.js"></script>
 <script src="js/ai-chat.js"></script>
+
+<script>
+  // Hide Team link for non-admins
+  if (!Auth.isAdmin()) {
+    const el = document.getElementById('teamNavItem');
+    if (el) el.style.display = 'none';
+  }
+</script>
+
 </body>
 </html>
